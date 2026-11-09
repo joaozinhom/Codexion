@@ -1,3 +1,5 @@
+//boundary with the outside world: parse and validate the arguments, then
+//hand them to the simulation. no concurrency logic lives here
 #include "codexion.h"
 
 static void	set_arguments(struct s_arguments *args, int *values,

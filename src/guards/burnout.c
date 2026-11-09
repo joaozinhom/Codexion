@@ -1,3 +1,8 @@
+//the watchdog: one thread that only observes. it tracks each programmer's
+//distance to burnout (last_compile_start + time_to_burnout), sleeps until
+//the nearest deadline, and pulls the kill switch when it passes or when
+//everyone reached number_of_compiles_required
+
 #include <limits.h>
 #include <stdio.h>
 #include "../codexion.h"
