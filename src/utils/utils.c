@@ -1,6 +1,7 @@
 //just utilitary functions
 #include <limits.h>
 #include <sys/time.h>
+#include <unistd.h>
 #include "utils.h"
 
 long	current_time_ms(void)
@@ -18,6 +19,11 @@ struct timespec	milliseconds_to_timespec(long milliseconds)
 	time.tv_sec = milliseconds / 1000;
 	time.tv_nsec = (milliseconds % 1000) * 1000000;
 	return (time);
+}
+
+void	sleep_ms(long milliseconds)
+{
+	usleep((useconds_t)milliseconds * 1000);
 }
 
 int	parse_nonnegative_int(const char *input, int *value)

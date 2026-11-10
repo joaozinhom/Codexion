@@ -4,11 +4,10 @@
 //everyone reached number_of_compiles_required
 
 #include <limits.h>
-#include <stdio.h>
 #include "../codexion.h"
-#include "programmer.h"
+#include "../programmer/programmer.h"
 
-static int	stop_if_all_finished(struct s_simulation *simulation)
+static int	stop_if_all_finished(t_simulation *simulation)
 {
 	int	i;
 
@@ -21,12 +20,11 @@ static int	stop_if_all_finished(struct s_simulation *simulation)
 		i++;
 	}
 	simulation->stopped = 1;
-	pthread_cond_broadcast(&simulation->state_changed);
+	simulation_signal_stop(simulation);
 	return (1);
 }
 
-static int	find_next_deadline(struct s_simulation *simulation,
-		long *deadline)
+static int	find_next_deadline(t_simulation *simulation, long *deadline)
 {
 	int		i;
 	int		selected;
@@ -53,37 +51,32 @@ static int	find_next_deadline(struct s_simulation *simulation,
 	return (selected);
 }
 
-static void	stop_after_burnout(struct s_simulation *simulation,
+static void	stop_after_burnout(t_simulation *simulation,
 		int programmer_index, long deadline)
 {
 	simulation->stopped = 1;
 	simulation->burnout_programmer_id
 		= simulation->programmers[programmer_index].id;
 	pthread_mutex_lock(&simulation->log_mutex);
-	printf("%ldms %d burned out\n", deadline - simulation->start_time_ms,
+	printf("%ld %d burned out\n", deadline - simulation->start_time_ms,
 		simulation->burnout_programmer_id);
 	fflush(stdout);
 	pthread_mutex_unlock(&simulation->log_mutex);
-	pthread_cond_broadcast(&simulation->state_changed);
-}
-
-static void	wait_for_simulation_start(struct s_simulation *simulation)
-{
-	while (!simulation->started && !simulation->stopped)
-		pthread_cond_wait(&simulation->state_changed,
-			&simulation->state_mutex);
+	simulation_signal_stop(simulation);
 }
 
 void	*monitor_burnout(void *context)
 {
-	struct s_simulation	*simulation;
-	struct timespec		wait_until;
-	long				deadline;
+	t_simulation	*simulation;
+	struct timespec	wait_until;
+	long			deadline;
 	int				programmer_index;
 
 	simulation = context;
 	pthread_mutex_lock(&simulation->state_mutex);
-	wait_for_simulation_start(simulation);
+	while (!simulation->started && !simulation->stopped)
+		pthread_cond_wait(&simulation->state_changed,
+			&simulation->state_mutex);
 	while (!simulation->stopped)
 	{
 		if (stop_if_all_finished(simulation))

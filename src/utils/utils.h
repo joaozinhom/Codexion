@@ -9,4 +9,6 @@ long	current_time_ms(void);
 
 struct timespec	milliseconds_to_timespec(long milliseconds);
 
+void	sleep_ms(long milliseconds);
+
 #endif

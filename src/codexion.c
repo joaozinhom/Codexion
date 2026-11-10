@@ -1,6 +1,8 @@
 //boundary with the outside world: parse and validate the arguments, then
 //hand them to the simulation. no concurrency logic lives here
+#include <stdlib.h>
 #include "codexion.h"
+#include "programmer/programmer.h"
 
 static void	set_arguments(struct s_arguments *args, int *values,
 		char *scheduler)
@@ -40,6 +42,7 @@ static int	parse_arguments(struct s_arguments *args, char **argv)
 int	main(int argc, char **argv)
 {
 	struct s_arguments	args;
+	t_simulation		simulation;
 
 	if (argc != 9)
 	{
@@ -50,5 +53,12 @@ int	main(int argc, char **argv)
 	}
 	if (!parse_arguments(&args, argv))
 		return (1);
+	if (!simulation_init(&simulation, &args))
+	{
+		fprintf(stderr, "Failed to allocate simulation\n");
+		return (1);
+	}
+	simulation_run(&simulation);
+	simulation_destroy(&simulation);
 	return (0);
 }
